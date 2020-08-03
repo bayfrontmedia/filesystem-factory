@@ -9,7 +9,9 @@
 
 namespace Bayfront\Filesystem\Exceptions;
 
-class FileWriteException extends FilesystemException
+use Exception;
+
+class FilesystemException extends Exception
 {
 
 }

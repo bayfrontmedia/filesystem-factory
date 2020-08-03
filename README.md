@@ -18,7 +18,7 @@ John Robinson, [Bayfront Media](https://www.bayfrontmedia.com)
 
 ## Requirements
 
-* PHP > 7.1.0
+* PHP >= 7.1.0
 
 ## Installation
 
@@ -27,6 +27,8 @@ composer require bayfrontmedia/filesystem-factory
 ```
 
 ## Usage
+
+**NOTE:** All exceptions thrown by Filesystem factory extend `Bayfront\Filesystem\Exceptions\FilesystemException`, so you can choose to catch exceptions as narrowly or broadly as you like.
 
 ### Configuration array
 
@@ -221,7 +223,7 @@ Installation: `league/flysystem-cached-adapter`
 
 **Description:**
 
-Sets the current disk, creating a new filesystem object if not already existing.
+Sets the current disk, creating a new filesystem object if not already existing. After the disk is accessed, the current disk will automatically revert to the default disk.
 
 **Parameters:**
 
@@ -244,7 +246,7 @@ try {
 
     $filesystem->disk('cdn')->write('file.txt', 'This is the content.');
 
-} catch (FileWriteException $e) {
+} catch (FilesystemException $e) { // "Catch-all" exception
 
     echo $e->getMessage();
 

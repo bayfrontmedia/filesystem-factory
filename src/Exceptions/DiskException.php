@@ -1,17 +1,15 @@
 <?php
+
 /**
- * An easy to use filesystem factory built atop Flysystem v1.
- *
- * @version     1.0.0
- * @link        https://github.com/bayfrontmedia/filesystem-factory
- * @license     MIT https://opensource.org/licenses/MIT
- * @copyright   2020 Bayfront Media https://www.bayfrontmedia.com
- * @author      John Robinson <john@bayfrontmedia.com>
+ * @package filesystem-factory
+ * @link https://github.com/bayfrontmedia/filesystem-factory
+ * @author John Robinson <john@bayfrontmedia.com>
+ * @copyright 2020 Bayfront Media
  */
 
 namespace Bayfront\Filesystem\Exceptions;
 
-class DiskException extends \Exception
+class DiskException extends FilesystemException
 {
 
 }

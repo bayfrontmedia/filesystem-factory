@@ -3,7 +3,7 @@
   "description": "An easy to use filesystem factory built atop Flysystem v1.",
   "homepage": "https://github.com/bayfrontmedia/filesystem-factory",
   "license" : "MIT",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "library",
   "keywords": [
     "php",
