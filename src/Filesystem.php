@@ -22,7 +22,7 @@ class Filesystem
 
     private $cache_namespace = 'Bayfront\\Filesystem\\Cache\\';
 
-    private $config; // Storage config array
+    private $config; // Filesystem config array
 
     private $current_disk; // Current disk name
 
@@ -37,7 +37,7 @@ class Filesystem
     /**
      * Constructor
      *
-     * @param array $config (Storage configuration array)
+     * @param array $config (Filesystem configuration array)
      *
      * @return void
      *
@@ -50,7 +50,7 @@ class Filesystem
 
         if (!isset($config[$this->default_disk_name])) { // Must have a "default" disk on the array
 
-            throw new Exceptions\ConfigurationException('Invalid storage configuration');
+            throw new Exceptions\ConfigurationException('Invalid filesystem configuration');
 
         }
 
