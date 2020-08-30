@@ -30,7 +30,7 @@ class Memory implements CacheInterface
     ];
 
     /**
-     * Create cache object
+     * Create cache object.
      *
      * @param array $config
      * @param AdapterInterface $adapter

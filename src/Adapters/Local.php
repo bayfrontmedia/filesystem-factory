@@ -32,7 +32,7 @@ class Local implements AdapterInterface
     ];
 
     /**
-     * Create Adapter object
+     * Create Adapter object.
      *
      * @param array $config
      *

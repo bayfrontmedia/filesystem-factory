@@ -35,7 +35,7 @@ class Filesystem
     private $revert_disk_after_use = true;
 
     /**
-     * Constructor
+     * Constructor.
      *
      * @param array $config (Filesystem configuration array)
      *
@@ -63,7 +63,7 @@ class Filesystem
     private $filesystems = []; // Active filesystem instances
 
     /**
-     * Returns current disk's filesystem object, then resets current disk to default
+     * Returns current disk's filesystem object, then resets current disk to default.
      *
      * @return Flysystem
      *
@@ -91,7 +91,7 @@ class Filesystem
     }
 
     /**
-     * Returns textual representation of visibility from boolean value
+     * Returns textual representation of visibility from boolean value.
      *
      * @param bool $bool
      *
@@ -104,7 +104,7 @@ class Filesystem
     }
 
     /**
-     * Sets the current disk, creating a new filesystem object if not already existing
+     * Sets the current disk, creating a new filesystem object if not already existing.
      *
      * @param string $name
      * @param bool $make_default
@@ -188,14 +188,14 @@ class Filesystem
 
         } catch (Exception $e) {
 
-            throw new Exceptions\DiskException($e->getMessage());
+            throw new Exceptions\DiskException($e->getMessage(), 0, $e);
 
         }
 
     }
 
     /**
-     * Returns name of current disk
+     * Returns name of current disk.
      *
      * @return string
      */
@@ -212,9 +212,9 @@ class Filesystem
      */
 
     /**
-     * Write/overwrite file
+     * Write/overwrite file.
      *
-     * NOTE: This method uses Flysystem's put method
+     * NOTE: This method uses Flysystem's put method.
      *
      * @param string $file
      * @param string $contents
@@ -243,16 +243,16 @@ class Filesystem
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileWriteException($e->getMessage());
+            throw new Exceptions\FileWriteException($e->getMessage(), 0, $e);
 
         }
 
     }
 
     /**
-     * Write/overwrite file using a stream
+     * Write/overwrite file using a stream.
      *
-     * NOTE: This method uses Flysystem's putStream method
+     * NOTE: This method uses Flysystem's putStream method.
      *
      * @param string $file
      * @param resource $resource
@@ -281,14 +281,14 @@ class Filesystem
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileWriteException($e->getMessage());
+            throw new Exceptions\FileWriteException($e->getMessage(), 0, $e);
 
         }
 
     }
 
     /**
-     * Prepends existing file with given contents
+     * Prepends existing file with given contents.
      *
      * @param string $file
      * @param string $contents
@@ -325,14 +325,14 @@ class Filesystem
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileWriteException($e->getMessage());
+            throw new Exceptions\FileWriteException($e->getMessage(), 0, $e);
 
         }
 
     }
 
     /**
-     * Appends existing file with given contents
+     * Appends existing file with given contents.
      *
      * @param string $file
      * @param string $contents
@@ -369,16 +369,16 @@ class Filesystem
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileWriteException($e->getMessage());
+            throw new Exceptions\FileWriteException($e->getMessage(), 0, $e);
 
         }
 
     }
 
     /**
-     * Checks if a given file or directory exists
+     * Checks if a given file or directory exists.
      *
-     * NOTE: Behavior may be inconsistent with directories, depending on the adapter being used
+     * NOTE: Behavior may be inconsistent with directories, depending on the adapter being used.
      *
      * @param string $path
      *
@@ -391,9 +391,9 @@ class Filesystem
     }
 
     /**
-     * Checks if a given file or directory does not exist
+     * Checks if a given file or directory does not exist.
      *
-     * NOTE: Behavior may be inconsistent with directories, depending on the adapter being used
+     * NOTE: Behavior may be inconsistent with directories, depending on the adapter being used.
      *
      * @param string $path
      *
@@ -406,7 +406,7 @@ class Filesystem
     }
 
     /**
-     * Renames a file or folder
+     * Renames a file or folder.
      *
      * @param string $from
      * @param string $to
@@ -434,14 +434,14 @@ class Filesystem
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileRenameException($e->getMessage());
+            throw new Exceptions\FileRenameException($e->getMessage(), 0, $e);
 
         }
 
     }
 
     /**
-     * Copies file from one location to another
+     * Copies file from one location to another.
      *
      * @param string $from
      * @param string $to
@@ -469,14 +469,14 @@ class Filesystem
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileCopyException($e->getMessage());
+            throw new Exceptions\FileCopyException($e->getMessage(), 0, $e);
 
         }
 
     }
 
     /**
-     * Moves file from one location to another
+     * Moves file from one location to another.
      *
      * @param string $from
      * @param string $to
@@ -508,14 +508,14 @@ class Filesystem
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileMoveException($e->getMessage());
+            throw new Exceptions\FileMoveException($e->getMessage(), 0, $e);
 
         }
 
     }
 
     /**
-     * Returns the contents of a file
+     * Returns the contents of a file.
      *
      * @param string $file
      *
@@ -542,14 +542,14 @@ class Filesystem
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileReadException($e->getMessage());
+            throw new Exceptions\FileReadException($e->getMessage(), 0, $e);
 
         }
 
     }
 
     /**
-     * Returns resource
+     * Returns resource.
      *
      * @param string $file
      *
@@ -576,14 +576,14 @@ class Filesystem
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileReadException($e->getMessage());
+            throw new Exceptions\FileReadException($e->getMessage(), 0, $e);
 
         }
 
     }
 
     /**
-     * Returns the contents of file, then deletes it
+     * Returns the contents of file, then deletes it.
      *
      * @param string $file
      *
@@ -610,14 +610,14 @@ class Filesystem
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileReadException($e->getMessage());
+            throw new Exceptions\FileReadException($e->getMessage(), 0, $e);
 
         }
 
     }
 
     /**
-     * Deletes a file
+     * Deletes a file.
      *
      * @param string $file
      *
@@ -642,14 +642,14 @@ class Filesystem
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileDeleteException($e->getMessage());
+            throw new Exceptions\FileDeleteException($e->getMessage(), 0, $e);
 
         }
 
     }
 
     /**
-     * Create a directory
+     * Create a directory.
      *
      * @param string $path
      * @param bool $public (Visibility)
@@ -677,14 +677,14 @@ class Filesystem
 
         } catch (Exception $e) {
 
-            throw new Exceptions\DirectoryCreateException($e->getMessage());
+            throw new Exceptions\DirectoryCreateException($e->getMessage(), 0, $e);
 
         }
 
     }
 
     /**
-     * Delete a directory
+     * Delete a directory.
      *
      * @param string $path
      *
@@ -711,16 +711,16 @@ class Filesystem
 
         } catch (Exception $e) {
 
-            throw new Exceptions\DirectoryDeleteException($e->getMessage());
+            throw new Exceptions\DirectoryDeleteException($e->getMessage(), 0, $e);
 
         }
 
     }
 
     /**
-     * List all contents of a directory
+     * List all contents of a directory.
      *
-     * NOTE: Returned array keys may differ depending on the adapter used
+     * NOTE: Returned array keys may differ depending on the adapter used.
      *
      * @param string $path
      * @param bool $recursive
@@ -734,9 +734,9 @@ class Filesystem
     }
 
     /**
-     * List all files in a directory
+     * List all files in a directory.
      *
-     * NOTE: Returned array keys may differ depending on the adapter used
+     * NOTE: Returned array keys may differ depending on the adapter used.
      *
      * @param string $path
      * @param bool $recursive
@@ -768,9 +768,9 @@ class Filesystem
     }
 
     /**
-     * List all files in a directory except files with given extension(s)
+     * List all files in a directory except files with given extension(s).
      *
-     * NOTE: Returned array keys may differ depending on the adapter used
+     * NOTE: Returned array keys may differ depending on the adapter used.
      *
      * @param string $path
      * @param bool $recursive
@@ -802,9 +802,9 @@ class Filesystem
     }
 
     /**
-     * List all directories in a path
+     * List all directories in a path.
      *
-     * NOTE: Returned array keys may differ depending on the adapter used
+     * NOTE: Returned array keys may differ depending on the adapter used.
      *
      * @param string $path
      * @param bool $recursive
@@ -837,7 +837,7 @@ class Filesystem
      */
 
     /**
-     * Returns the visibility of a given file or directory
+     * Returns the visibility of a given file or directory.
      *
      * @param string $path
      *
@@ -856,14 +856,14 @@ class Filesystem
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileMetadataException($e->getMessage());
+            throw new Exceptions\FileMetadataException($e->getMessage(), 0, $e);
 
         }
 
     }
 
     /**
-     * Checks if the visibility of a given file or directory is "public"
+     * Checks if the visibility of a given file or directory is "public".
      *
      * @param string $path
      *
@@ -882,14 +882,14 @@ class Filesystem
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileMetadataException($e->getMessage());
+            throw new Exceptions\FileMetadataException($e->getMessage(), 0, $e);
 
         }
 
     }
 
     /**
-     * Checks if the visibility of a given file or directory is "private"
+     * Checks if the visibility of a given file or directory is "private".
      *
      * @param string $path
      *
@@ -908,14 +908,14 @@ class Filesystem
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileMetadataException($e->getMessage());
+            throw new Exceptions\FileMetadataException($e->getMessage(), 0, $e);
 
         }
 
     }
 
     /**
-     * Sets the visibility of a given file or directory to "public"
+     * Sets the visibility of a given file or directory to "public".
      *
      * @param string $path
      *
@@ -940,14 +940,14 @@ class Filesystem
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileMetadataException($e->getMessage());
+            throw new Exceptions\FileMetadataException($e->getMessage(), 0, $e);
 
         }
 
     }
 
     /**
-     * Sets the visibility of a given file or directory to "private"
+     * Sets the visibility of a given file or directory to "private".
      *
      * @param string $path
      *
@@ -972,14 +972,14 @@ class Filesystem
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileMetadataException($e->getMessage());
+            throw new Exceptions\FileMetadataException($e->getMessage(), 0, $e);
 
         }
 
     }
 
     /**
-     * Sets the visibility of a given file or directory
+     * Sets the visibility of a given file or directory.
      *
      * @param string $path
      * @param string $visibility ("public" or "private")
@@ -1009,16 +1009,16 @@ class Filesystem
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileMetadataException($e->getMessage());
+            throw new Exceptions\FileMetadataException($e->getMessage(), 0, $e);
 
         }
 
     }
 
     /**
-     * Returns known metadata of a given file or directory
+     * Returns known metadata of a given file or directory.
      *
-     * NOTE: Returned array keys may differ depending on the adapter that is used
+     * NOTE: Returned array keys may differ depending on the adapter that is used.
      *
      * @param string $path
      *
@@ -1045,14 +1045,14 @@ class Filesystem
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileMetadataException($e->getMessage());
+            throw new Exceptions\FileMetadataException($e->getMessage(), 0, $e);
 
         }
 
     }
 
     /**
-     * Returns MIME type of given file or directory
+     * Returns MIME type of given file or directory.
      *
      * @param string $path
      *
@@ -1079,14 +1079,14 @@ class Filesystem
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileMetadataException($e->getMessage());
+            throw new Exceptions\FileMetadataException($e->getMessage(), 0, $e);
 
         }
 
     }
 
     /**
-     * Returns size in bytes of given file
+     * Returns size in bytes of given file.
      *
      * @param string $file
      *
@@ -1113,14 +1113,14 @@ class Filesystem
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileMetadataException($e->getMessage());
+            throw new Exceptions\FileMetadataException($e->getMessage(), 0, $e);
 
         }
 
     }
 
     /**
-     * Returns timestamp of given file or directory
+     * Returns timestamp of given file or directory.
      *
      * @param string $path
      *
@@ -1147,18 +1147,18 @@ class Filesystem
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileMetadataException($e->getMessage());
+            throw new Exceptions\FileMetadataException($e->getMessage(), 0, $e);
 
         }
 
     }
 
     /**
-     * Touch file
+     * Touch file.
      *
      * Technically, the actions being performed in this method are not directly working with
      * metadata, but because the thought of "touching" a file is simply to update the timestamp,
-     * this method throws a FileMetadataException
+     * this method throws a FileMetadataException.
      *
      * @param string $file
      *
@@ -1193,14 +1193,14 @@ class Filesystem
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileMetadataException($e->getMessage());
+            throw new Exceptions\FileMetadataException($e->getMessage(), 0, $e);
 
         }
 
     }
 
     /**
-     * Returns URL of a given path based on the "url" array key in the disk's configuration array
+     * Returns URL of a given path based on the "url" array key in the disk's configuration array.
      *
      * @param string $path
      *
@@ -1229,7 +1229,7 @@ class Filesystem
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileMetadataException($e->getMessage());
+            throw new Exceptions\FileMetadataException($e->getMessage(), 0, $e);
 
         }
 
