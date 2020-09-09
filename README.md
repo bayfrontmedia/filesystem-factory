@@ -178,10 +178,18 @@ Installation: `league/flysystem-cached-adapter`
 
 ### Public methods
 
+**Disks**
+
+- [getDisk](#getdisk)
+- [getDefaultDisk](#getdefaultdisk)
+- [getCurrentDisk](#getcurrentdisk)
+- [getDiskNames](#getdisknames)
+- [getDefaultDiskName](#getdefaultdiskname)
+- [getCurrentDiskName](#getcurrentdiskname)
+- [disk](#disk)
+
 **Files and directories**
 
-- [disk](#disk)
-- [getCurrentDisk](#getcurrentdisk)
 - [write](#write)
 - [writeStream](#writestream)
 - [prepend](#prepend)
@@ -219,11 +227,147 @@ Installation: `league/flysystem-cached-adapter`
 
 <hr />
 
+### getDisk
+
+**Description:**
+
+Returns the Flysystem instance for a given disk name.
+
+**Parameters:**
+
+- `$name` (string)
+
+**Returns:**
+
+- (`League\Flysystem\Filesystem`)
+
+**Throws:**
+
+- `Bayfront\Filesystem\Exceptions\DiskException`
+
+**Example:**
+
+```
+$flysystem = $filesystem->getDisk('cdn');
+```
+
+<hr />
+
+### getDefaultDisk
+
+**Description:**
+
+Returns the Flysystem instance for the default disk.
+
+**Parameters:**
+
+- (None)
+
+**Returns:**
+
+- (`League\Flysystem\Filesystem`)
+
+**Example:**
+
+```
+$flysystem = $filesystem->getDefaultDisk();
+```
+
+<hr />
+
+### getCurrentDisk
+
+**Description:**
+
+Returns the Flysystem instance for the current disk.
+
+**Parameters:**
+
+- (None)
+
+**Returns:**
+
+- (`League\Flysystem\Filesystem`)
+
+**Example:**
+
+```
+$flysystem = $filesystem->getCurrentDisk();
+```
+
+<hr />
+
+### getDiskNames
+
+**Description:**
+
+Returns array of disk names which have been created.
+
+**Parameters:**
+
+- (None)
+
+**Returns:**
+
+- (array)
+
+**Example:**
+
+```
+print_r($filesystem->getDiskNames());
+```
+
+<hr />
+
+### getDefaultDiskName
+
+**Description:**
+
+Returns name of the default disk.
+
+**Parameters:**
+
+- (None)
+
+**Returns:**
+
+- (string)
+
+**Example:**
+
+```
+echo $filesystem->getDefaultDiskName();
+```
+
+<hr />
+
+### getCurrentDiskName
+
+**Description:**
+
+Returns name of the current disk.
+
+**Parameters:**
+
+- (None)
+
+**Returns:**
+
+- (string)
+
+**Example:**
+
+```
+echo $filesystem->getCurrentDiskName();
+```
+
+<hr />
+
 ### disk
 
 **Description:**
 
-Sets the current disk, creating a new filesystem object if not already existing. After the disk is accessed, the current disk will automatically revert to the default disk.
+Sets the current disk, creating a new filesystem instance if not already existing. After the disk is accessed, the current disk will automatically revert to the default disk.
 
 **Parameters:**
 
@@ -251,28 +395,6 @@ try {
     echo $e->getMessage();
 
 }
-```
-
-<hr />
-
-### getCurrentDisk
-
-**Description:**
-
-Returns name of current disk.
-
-**Parameters:**
-
-- None
-
-**Returns:**
-
-- (string)
-
-**Example:**
-
-```
-echo $filesystem->getCurrentDisk();
 ```
 
 <hr />

@@ -9,6 +9,17 @@
 
 namespace Bayfront\Filesystem;
 
+use Bayfront\Filesystem\Exceptions\ConfigurationException;
+use Bayfront\Filesystem\Exceptions\DirectoryCreateException;
+use Bayfront\Filesystem\Exceptions\DirectoryDeleteException;
+use Bayfront\Filesystem\Exceptions\DiskException;
+use Bayfront\Filesystem\Exceptions\FileCopyException;
+use Bayfront\Filesystem\Exceptions\FileDeleteException;
+use Bayfront\Filesystem\Exceptions\FileMetadataException;
+use Bayfront\Filesystem\Exceptions\FileMoveException;
+use Bayfront\Filesystem\Exceptions\FileReadException;
+use Bayfront\Filesystem\Exceptions\FileRenameException;
+use Bayfront\Filesystem\Exceptions\FileWriteException;
 use Exception;
 use Bayfront\ArrayHelpers\Arr;
 use League\Flysystem\Filesystem as Flysystem;
@@ -41,7 +52,7 @@ class Filesystem
      *
      * @return void
      *
-     * @throws Exceptions\ConfigurationException
+     * @throws ConfigurationException
      *
      */
 
@@ -50,13 +61,15 @@ class Filesystem
 
         if (!isset($config[$this->default_disk_name])) { // Must have a "default" disk on the array
 
-            throw new Exceptions\ConfigurationException('Invalid filesystem configuration');
+            throw new ConfigurationException('Invalid filesystem configuration');
 
         }
 
         $this->config = $config;
 
         $this->current_disk = $this->default_disk_name;
+
+        $this->disk($this->default_disk_name); // Create instance
 
     }
 
@@ -104,15 +117,99 @@ class Filesystem
     }
 
     /**
-     * Sets the current disk, creating a new filesystem object if not already existing.
+     * Returns the Flysystem instance for a given disk name.
+     *
+     * @param string $name
+     *
+     * @return Flysystem
+     *
+     * @throws DiskException
+     */
+
+    public function getDisk(string $name): Flysystem
+    {
+
+        $current = $this->current_disk;
+
+        /*
+         * Force the creation of this disk if it does not already exist
+         */
+
+        $this->disk($name)->disk($current);
+
+        if (!isset($this->filesystems[$name])) {
+            throw new DiskException('Disk does not exist (' . $name . ')');
+        }
+
+        return $this->filesystems[$name];
+
+    }
+
+    /**
+     * Returns the Flysystem instance for the default disk.
+     *
+     * @return Flysystem
+     */
+
+    public function getDefaultDisk(): Flysystem
+    {
+        return $this->getDisk($this->getDefaultDiskName());
+    }
+
+    /**
+     * Returns the Flysystem instance for the current disk.
+     *
+     * @return Flysystem
+     */
+
+    public function getCurrentDisk(): Flysystem
+    {
+        return $this->getDisk($this->getCurrentDiskName());
+    }
+
+    /**
+     * Returns array of disk names which have been created.
+     *
+     * @return array
+     */
+
+    public function getDiskNames(): array
+    {
+        return array_keys($this->filesystems);
+    }
+
+    /**
+     * Returns name of the default disk.
+     *
+     * @return string
+     */
+
+    public function getDefaultDiskName(): string
+    {
+        return $this->default_disk_name;
+    }
+
+    /**
+     * Returns name of the current disk.
+     *
+     * @return string
+     */
+
+    public function getCurrentDiskName(): string
+    {
+        return $this->current_disk;
+    }
+
+    /**
+     * Sets the current disk, creating a new filesystem instance if not already existing.
      *
      * @param string $name
      * @param bool $make_default
      *
      * @return self
      *
-     * @throws Exceptions\ConfigurationException
-     * @throws Exceptions\DiskException
+     * @throws ConfigurationException
+     * @throws DiskException
      */
 
     public function disk(string $name, bool $make_default = false): self
@@ -141,13 +238,13 @@ class Filesystem
                 'adapter'
             ])) {
 
-            throw new Exceptions\ConfigurationException('Invalid disk configuration');
+            throw new ConfigurationException('Invalid disk configuration');
 
         }
 
         if (!class_exists($this->adapters_namespace . $this->config[$name]['adapter'])) {
 
-            throw new Exceptions\DiskException('Disk adapter does not exist');
+            throw new DiskException('Disk adapter does not exist (' . $this->config[$name]['adapter'] . ')');
 
         }
 
@@ -188,21 +285,10 @@ class Filesystem
 
         } catch (Exception $e) {
 
-            throw new Exceptions\DiskException($e->getMessage(), 0, $e);
+            throw new DiskException($e->getMessage(), 0, $e);
 
         }
 
-    }
-
-    /**
-     * Returns name of current disk.
-     *
-     * @return string
-     */
-
-    public function getCurrentDisk(): string
-    {
-        return $this->current_disk;
     }
 
     /*
@@ -222,7 +308,7 @@ class Filesystem
      *
      * @return void
      *
-     * @throws Exceptions\FileWriteException
+     * @throws FileWriteException
      *
      */
 
@@ -239,11 +325,11 @@ class Filesystem
 
             }
 
-            throw new Exceptions\FileWriteException('Unable to write');
+            throw new FileWriteException('Unable to write (' . $file . ')');
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileWriteException($e->getMessage(), 0, $e);
+            throw new FileWriteException($e->getMessage(), 0, $e);
 
         }
 
@@ -260,7 +346,7 @@ class Filesystem
      *
      * @return void
      *
-     * @throws Exceptions\FileWriteException
+     * @throws FileWriteException
      *
      */
 
@@ -277,11 +363,11 @@ class Filesystem
 
             }
 
-            throw new Exceptions\FileWriteException('Unable to write stream');
+            throw new FileWriteException('Unable to write stream (' . $file . ')');
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileWriteException($e->getMessage(), 0, $e);
+            throw new FileWriteException($e->getMessage(), 0, $e);
 
         }
 
@@ -296,7 +382,7 @@ class Filesystem
      *
      * @return void
      *
-     * @throws Exceptions\FileWriteException
+     * @throws FileWriteException
      *
      */
 
@@ -321,11 +407,11 @@ class Filesystem
 
             }
 
-            throw new Exceptions\FileWriteException('Unable to prepend');
+            throw new FileWriteException('Unable to prepend (' . $file . ')');
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileWriteException($e->getMessage(), 0, $e);
+            throw new FileWriteException($e->getMessage(), 0, $e);
 
         }
 
@@ -340,7 +426,7 @@ class Filesystem
      *
      * @return void
      *
-     * @throws Exceptions\FileWriteException
+     * @throws FileWriteException
      *
      */
 
@@ -365,11 +451,11 @@ class Filesystem
 
             }
 
-            throw new Exceptions\FileWriteException('Unable to append');
+            throw new FileWriteException('Unable to append (' . $file . ')');
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileWriteException($e->getMessage(), 0, $e);
+            throw new FileWriteException($e->getMessage(), 0, $e);
 
         }
 
@@ -413,7 +499,7 @@ class Filesystem
      *
      * @return void
      *
-     * @throws Exceptions\FileRenameException
+     * @throws FileRenameException
      *
      */
 
@@ -430,11 +516,11 @@ class Filesystem
 
             }
 
-            throw new Exceptions\FileRenameException('Unable to rename');
+            throw new FileRenameException('Unable to rename');
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileRenameException($e->getMessage(), 0, $e);
+            throw new FileRenameException($e->getMessage(), 0, $e);
 
         }
 
@@ -448,7 +534,7 @@ class Filesystem
      *
      * @return void
      *
-     * @throws Exceptions\FileCopyException
+     * @throws FileCopyException
      *
      */
 
@@ -465,11 +551,11 @@ class Filesystem
 
             }
 
-            throw new Exceptions\FileCopyException('Unable to copy');
+            throw new FileCopyException('Unable to copy');
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileCopyException($e->getMessage(), 0, $e);
+            throw new FileCopyException($e->getMessage(), 0, $e);
 
         }
 
@@ -483,7 +569,7 @@ class Filesystem
      *
      * @return void
      *
-     * @throws Exceptions\FileMoveException
+     * @throws FileMoveException
      *
      */
 
@@ -504,11 +590,11 @@ class Filesystem
 
             }
 
-            throw new Exceptions\FileMoveException('Unable to move');
+            throw new FileMoveException('Unable to move');
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileMoveException($e->getMessage(), 0, $e);
+            throw new FileMoveException($e->getMessage(), 0, $e);
 
         }
 
@@ -521,7 +607,7 @@ class Filesystem
      *
      * @return string
      *
-     * @throws Exceptions\FileReadException
+     * @throws FileReadException
      *
      */
 
@@ -538,11 +624,11 @@ class Filesystem
 
             }
 
-            throw new Exceptions\FileReadException('Unable to read');
+            throw new FileReadException('Unable to read (' . $file . ')');
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileReadException($e->getMessage(), 0, $e);
+            throw new FileReadException($e->getMessage(), 0, $e);
 
         }
 
@@ -555,7 +641,7 @@ class Filesystem
      *
      * @return resource
      *
-     * @throws Exceptions\FileReadException
+     * @throws FileReadException
      *
      */
 
@@ -572,11 +658,11 @@ class Filesystem
 
             }
 
-            throw new Exceptions\FileReadException('Unable to read stream');
+            throw new FileReadException('Unable to read stream (' . $file . ')');
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileReadException($e->getMessage(), 0, $e);
+            throw new FileReadException($e->getMessage(), 0, $e);
 
         }
 
@@ -589,7 +675,7 @@ class Filesystem
      *
      * @return string
      *
-     * @throws Exceptions\FileReadException
+     * @throws FileReadException
      *
      */
 
@@ -606,11 +692,11 @@ class Filesystem
 
             }
 
-            throw new Exceptions\FileReadException('Unable to read and delete');
+            throw new FileReadException('Unable to read and delete (' . $file . ')');
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileReadException($e->getMessage(), 0, $e);
+            throw new FileReadException($e->getMessage(), 0, $e);
 
         }
 
@@ -623,7 +709,7 @@ class Filesystem
      *
      * @return void
      *
-     * @throws Exceptions\FileDeleteException
+     * @throws FileDeleteException
      *
      */
 
@@ -636,13 +722,13 @@ class Filesystem
 
             if (!$delete) {
 
-                throw new Exceptions\FileDeleteException('Unable to delete');
+                throw new FileDeleteException('Unable to delete (' . $file . ')');
 
             }
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileDeleteException($e->getMessage(), 0, $e);
+            throw new FileDeleteException($e->getMessage(), 0, $e);
 
         }
 
@@ -656,7 +742,7 @@ class Filesystem
      *
      * @return void
      *
-     * @throws Exceptions\DirectoryCreateException
+     * @throws DirectoryCreateException
      *
      */
 
@@ -673,11 +759,11 @@ class Filesystem
 
             }
 
-            throw new Exceptions\DirectoryCreateException('Unable to create directory');
+            throw new DirectoryCreateException('Unable to create directory (' . $path . ')');
 
         } catch (Exception $e) {
 
-            throw new Exceptions\DirectoryCreateException($e->getMessage(), 0, $e);
+            throw new DirectoryCreateException($e->getMessage(), 0, $e);
 
         }
 
@@ -690,7 +776,7 @@ class Filesystem
      *
      * @return void
      *
-     * @throws Exceptions\DirectoryDeleteException
+     * @throws DirectoryDeleteException
      *
      */
 
@@ -707,11 +793,11 @@ class Filesystem
 
             }
 
-            throw new Exceptions\DirectoryDeleteException('Unable to delete directory');
+            throw new DirectoryDeleteException('Unable to delete directory (' . $path . ')');
 
         } catch (Exception $e) {
 
-            throw new Exceptions\DirectoryDeleteException($e->getMessage(), 0, $e);
+            throw new DirectoryDeleteException($e->getMessage(), 0, $e);
 
         }
 
@@ -843,7 +929,7 @@ class Filesystem
      *
      * @return string ("public" or "private")
      *
-     * @throws Exceptions\FileMetadataException
+     * @throws FileMetadataException
      *
      */
 
@@ -856,7 +942,7 @@ class Filesystem
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileMetadataException($e->getMessage(), 0, $e);
+            throw new FileMetadataException($e->getMessage(), 0, $e);
 
         }
 
@@ -869,7 +955,7 @@ class Filesystem
      *
      * @return bool
      *
-     * @throws Exceptions\FileMetadataException
+     * @throws FileMetadataException
      *
      */
 
@@ -882,7 +968,7 @@ class Filesystem
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileMetadataException($e->getMessage(), 0, $e);
+            throw new FileMetadataException($e->getMessage(), 0, $e);
 
         }
 
@@ -895,7 +981,7 @@ class Filesystem
      *
      * @return bool
      *
-     * @throws Exceptions\FileMetadataException
+     * @throws FileMetadataException
      *
      */
 
@@ -908,7 +994,7 @@ class Filesystem
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileMetadataException($e->getMessage(), 0, $e);
+            throw new FileMetadataException($e->getMessage(), 0, $e);
 
         }
 
@@ -921,7 +1007,7 @@ class Filesystem
      *
      * @return void
      *
-     * @throws Exceptions\FileMetadataException
+     * @throws FileMetadataException
      *
      */
 
@@ -934,13 +1020,13 @@ class Filesystem
 
             if (!$visibility) {
 
-                throw new Exceptions\FileMetadataException('Unable to set visibility as public');
+                throw new FileMetadataException('Unable to set visibility as public (' . $path . ')');
 
             }
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileMetadataException($e->getMessage(), 0, $e);
+            throw new FileMetadataException($e->getMessage(), 0, $e);
 
         }
 
@@ -953,7 +1039,7 @@ class Filesystem
      *
      * @return void
      *
-     * @throws Exceptions\FileMetadataException
+     * @throws FileMetadataException
      *
      */
 
@@ -966,13 +1052,13 @@ class Filesystem
 
             if (!$visibility) {
 
-                throw new Exceptions\FileMetadataException('Unable to set visibility as private');
+                throw new FileMetadataException('Unable to set visibility as private (' . $path . ')');
 
             }
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileMetadataException($e->getMessage(), 0, $e);
+            throw new FileMetadataException($e->getMessage(), 0, $e);
 
         }
 
@@ -986,7 +1072,7 @@ class Filesystem
      *
      * @return void
      *
-     * @throws Exceptions\FileMetadataException
+     * @throws FileMetadataException
      *
      */
 
@@ -1003,13 +1089,13 @@ class Filesystem
 
             if (!$visibility) {
 
-                throw new Exceptions\FileMetadataException('Unable to set visibility');
+                throw new FileMetadataException('Unable to set visibility (' . $path . ')');
 
             }
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileMetadataException($e->getMessage(), 0, $e);
+            throw new FileMetadataException($e->getMessage(), 0, $e);
 
         }
 
@@ -1024,7 +1110,7 @@ class Filesystem
      *
      * @return array
      *
-     * @throws Exceptions\FileMetadataException
+     * @throws FileMetadataException
      *
      */
 
@@ -1041,11 +1127,11 @@ class Filesystem
 
             }
 
-            throw new Exceptions\FileMetadataException('Unable to get metadata');
+            throw new FileMetadataException('Unable to get metadata (' . $path . ')');
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileMetadataException($e->getMessage(), 0, $e);
+            throw new FileMetadataException($e->getMessage(), 0, $e);
 
         }
 
@@ -1058,7 +1144,7 @@ class Filesystem
      *
      * @return string
      *
-     * @throws Exceptions\FileMetadataException
+     * @throws FileMetadataException
      *
      */
 
@@ -1075,11 +1161,11 @@ class Filesystem
 
             }
 
-            throw new Exceptions\FileMetadataException('Unable to get MIME type');
+            throw new FileMetadataException('Unable to get MIME type (' . $path . ')');
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileMetadataException($e->getMessage(), 0, $e);
+            throw new FileMetadataException($e->getMessage(), 0, $e);
 
         }
 
@@ -1092,7 +1178,7 @@ class Filesystem
      *
      * @return int
      *
-     * @throws Exceptions\FileMetadataException
+     * @throws FileMetadataException
      *
      */
 
@@ -1109,11 +1195,11 @@ class Filesystem
 
             }
 
-            throw new Exceptions\FileMetadataException('Unable to get size');
+            throw new FileMetadataException('Unable to get size (' . $file . ')');
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileMetadataException($e->getMessage(), 0, $e);
+            throw new FileMetadataException($e->getMessage(), 0, $e);
 
         }
 
@@ -1126,7 +1212,7 @@ class Filesystem
      *
      * @return int
      *
-     * @throws Exceptions\FileMetadataException
+     * @throws FileMetadataException
      *
      */
 
@@ -1143,11 +1229,11 @@ class Filesystem
 
             }
 
-            throw new Exceptions\FileMetadataException('Unable to get timestamp');
+            throw new FileMetadataException('Unable to get timestamp (' . $path . ')');
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileMetadataException($e->getMessage(), 0, $e);
+            throw new FileMetadataException($e->getMessage(), 0, $e);
 
         }
 
@@ -1164,7 +1250,7 @@ class Filesystem
      *
      * @return void
      *
-     * @throws Exceptions\FileMetadataException
+     * @throws FileMetadataException
      *
      */
 
@@ -1189,11 +1275,11 @@ class Filesystem
 
             }
 
-            throw new Exceptions\FileMetadataException('Unable to touch');
+            throw new FileMetadataException('Unable to touch (' . $file . ')');
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileMetadataException($e->getMessage(), 0, $e);
+            throw new FileMetadataException($e->getMessage(), 0, $e);
 
         }
 
@@ -1206,7 +1292,7 @@ class Filesystem
      *
      * @return string
      *
-     * @throws Exceptions\FileMetadataException
+     * @throws FileMetadataException
      *
      */
 
@@ -1225,11 +1311,11 @@ class Filesystem
 
             }
 
-            throw new Exceptions\FileMetadataException('Unable to retrieve URL');
+            throw new FileMetadataException('Unable to retrieve URL (' . $path . ')');
 
         } catch (Exception $e) {
 
-            throw new Exceptions\FileMetadataException($e->getMessage(), 0, $e);
+            throw new FileMetadataException($e->getMessage(), 0, $e);
 
         }
 
