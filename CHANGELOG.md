@@ -12,6 +12,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities
 
+## [1.1.0] - 2020.09.09
+
+### Added
+
+- `getDisk` method
+- `getDefaultDisk` method
+- `getCurrentDisk` method
+- `getDiskNames` method
+- `getDefaultDiskName` method
+- `getCurrentDiskName` method
+
 ## [1.0.2] - 2020.08.29
 
 ### Fixed
