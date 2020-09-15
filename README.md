@@ -43,6 +43,7 @@ To enable caching for a disk (optional), add a `cache` array with a `location` k
 **Example:**
 
 ```
+use Bayfront\Filesystem\Exceptions\ConfigurationException;
 use Bayfront\Filesystem\Filesystem;
 
 $config = [
@@ -64,9 +65,15 @@ $config = [
             'location' => 'Memory' // Class name in Bayfront\Filesystem\Cache namespace
         ]
     ]
-]
+];
 
-$storage = new Filesystem($config);
+try {
+
+    $storage = new Filesystem($config);
+
+} catch (ConfigurationException $e) {
+    die($e->getMessage());
+}
 ```
 
 ### Adapters

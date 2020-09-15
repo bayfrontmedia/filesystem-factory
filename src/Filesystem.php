@@ -21,13 +21,10 @@ use Bayfront\Filesystem\Exceptions\FileReadException;
 use Bayfront\Filesystem\Exceptions\FileRenameException;
 use Bayfront\Filesystem\Exceptions\FileWriteException;
 use Exception;
-use Bayfront\ArrayHelpers\Arr;
 use League\Flysystem\Filesystem as Flysystem;
 
 class Filesystem
 {
-
-    private $default_disk_name = 'default';
 
     private $adapters_namespace = 'Bayfront\\Filesystem\\Adapters\\';
 
@@ -35,15 +32,9 @@ class Filesystem
 
     private $config; // Filesystem config array
 
-    private $current_disk; // Current disk name
+    private $default_disk_name;
 
-    /*
-     * Revert back to default disk after _getDisk() is called
-     *
-     * This is updated via the $make_default parameter of disk()
-     */
-
-    private $revert_disk_after_use = true;
+    private $current_disk_name;
 
     /**
      * Constructor.
@@ -53,24 +44,16 @@ class Filesystem
      * @return void
      *
      * @throws ConfigurationException
-     * @throws DiskException
-     *
      */
 
     public function __construct(array $config)
     {
 
-        if (!isset($config[$this->default_disk_name])) { // Must have a "default" disk on the array
-
-            throw new ConfigurationException('Invalid filesystem configuration');
-
-        }
-
         $this->config = $config;
 
         $this->_connectToDisks();
 
-        $this->current_disk = $this->default_disk_name;
+        //$this->current_disk = $this->default_disk_name;
 
     }
 
@@ -84,7 +67,6 @@ class Filesystem
      * @return void
      *
      * @throws ConfigurationException
-     * @throws DiskException
      */
 
     private function _connectToDisks(): void
@@ -92,21 +74,19 @@ class Filesystem
 
         foreach ($this->config as $disk_name => $disk_config) {
 
-            // Create new filesystem object
-
             // Check validity
 
-            if (Arr::isMissing($disk_config, [
-                    'adapter'
-                ])) {
+            if (!isset($disk_config['adapter']) || !class_exists($this->adapters_namespace . $disk_config['adapter'])) {
 
-                throw new ConfigurationException('Invalid disk configuration');
+                throw new ConfigurationException('Invalid disk configuration (' . $disk_name . '): Adapter not specified or does not exist');
 
             }
 
-            if (!class_exists($this->adapters_namespace . $disk_config['adapter'])) {
+            if (isset($disk_config['default']) && true === $disk_config['default']) { // If default disk
 
-                throw new DiskException('Disk adapter does not exist (' . $disk_config['adapter'] . ')');
+                $this->default_disk_name = $disk_name;
+
+                $this->current_disk_name = $disk_name;
 
             }
 
@@ -137,36 +117,17 @@ class Filesystem
 
             } catch (Exception $e) {
 
-                throw new DiskException($e->getMessage(), 0, $e);
+                throw new ConfigurationException($e->getMessage(), 0, $e);
 
             }
 
         }
 
-    }
+        if (!$this->default_disk_name || !$this->current_disk_name) {
 
-    /**
-     * Returns current disk's filesystem object, then resets current disk to default.
-     *
-     * Because the current disk name will always exist as a disk,
-     * the DiskException can be suppressed.
-     *
-     * @return Flysystem
-     *
-     * @noinspection PhpUnhandledExceptionInspection
-     * @noinspection PhpDocMissingThrowsInspection
-     */
-
-    private function _getDisk(): Flysystem
-    {
-
-        if (true === $this->revert_disk_after_use) {
-
-            $this->current_disk = $this->default_disk_name; // Revert disk
+            throw new ConfigurationException('Invalid disk configuration: No default disk specified');
 
         }
-
-        return $this->getDisk($this->current_disk);
 
     }
 
@@ -207,27 +168,36 @@ class Filesystem
     /**
      * Returns the Flysystem instance for the default disk.
      *
+     * Because the default disk name will always exist as a disk,
+     * the DiskException can be suppressed.
+     *
      * @return Flysystem
      *
-     * @throws DiskException
+     * @noinspection PhpUnhandledExceptionInspection
+     * @noinspection PhpDocMissingThrowsInspection
+     *
      */
 
     public function getDefaultDisk(): Flysystem
     {
-        return $this->getDisk($this->getDefaultDiskName());
+        return $this->getDisk($this->default_disk_name);
     }
 
     /**
      * Returns the Flysystem instance for the current disk.
      *
+     * Because the current disk name will always exist as a disk,
+     * the DiskException can be suppressed.
+     *
      * @return Flysystem
      *
-     * @throws DiskException
+     * @noinspection PhpUnhandledExceptionInspection
+     * @noinspection PhpDocMissingThrowsInspection
      */
 
     public function getCurrentDisk(): Flysystem
     {
-        return $this->getDisk($this->getCurrentDiskName());
+        return $this->getDisk($this->current_disk_name);
     }
 
     /**
@@ -260,7 +230,7 @@ class Filesystem
 
     public function getCurrentDiskName(): string
     {
-        return $this->current_disk;
+        return $this->current_disk_name;
     }
 
     /**
@@ -292,11 +262,11 @@ class Filesystem
 
         if ($this->hasDisk($name)) {
 
-            $this->current_disk = $name; // Update current disk name
+            $this->current_disk_name = $name; // Update current disk name
 
             if (true === $make_default) {
 
-                $this->revert_disk_after_use = false;
+                $this->default_disk_name = $name;
 
             }
 
@@ -334,7 +304,7 @@ class Filesystem
 
         try {
 
-            $write = $this->_getDisk()->put($file, $contents, ['visibility' => $this->_boolToVisibility($public)]);
+            $write = $this->getCurrentDisk()->put($file, $contents, ['visibility' => $this->_boolToVisibility($public)]);
 
             if ($write) {
 
@@ -372,7 +342,7 @@ class Filesystem
 
         try {
 
-            $write = $this->_getDisk()->putStream($file, $resource, ['visibility' => $this->_boolToVisibility($public)]);
+            $write = $this->getCurrentDisk()->putStream($file, $resource, ['visibility' => $this->_boolToVisibility($public)]);
 
             if ($write) {
 
@@ -408,7 +378,7 @@ class Filesystem
 
         try {
 
-            $disk = $this->_getDisk();
+            $disk = $this->getCurrentDisk();
 
             $existing = $disk->read($file);
 
@@ -452,7 +422,7 @@ class Filesystem
 
         try {
 
-            $disk = $this->_getDisk();
+            $disk = $this->getCurrentDisk();
 
             $existing = $disk->read($file);
 
@@ -490,7 +460,7 @@ class Filesystem
 
     public function exists(string $path): bool
     {
-        return $this->_getDisk()->has($path);
+        return $this->getCurrentDisk()->has($path);
     }
 
     /**
@@ -525,7 +495,7 @@ class Filesystem
 
         try {
 
-            $rename = $this->_getDisk()->rename($from, $to);
+            $rename = $this->getCurrentDisk()->rename($from, $to);
 
             if ($rename) {
 
@@ -560,7 +530,7 @@ class Filesystem
 
         try {
 
-            $copy = $this->_getDisk()->copy($from, $to);
+            $copy = $this->getCurrentDisk()->copy($from, $to);
 
             if ($copy) {
 
@@ -595,7 +565,7 @@ class Filesystem
 
         try {
 
-            $disk = $this->_getDisk();
+            $disk = $this->getCurrentDisk();
 
             if ($disk->copy($from, $to)) {
 
@@ -633,7 +603,7 @@ class Filesystem
 
         try {
 
-            $get = $this->_getDisk()->read($file);
+            $get = $this->getCurrentDisk()->read($file);
 
             if ($get) {
 
@@ -667,7 +637,7 @@ class Filesystem
 
         try {
 
-            $get = $this->_getDisk()->readStream($file);
+            $get = $this->getCurrentDisk()->readStream($file);
 
             if ($get) {
 
@@ -701,7 +671,7 @@ class Filesystem
 
         try {
 
-            $get = $this->_getDisk()->readAndDelete($file);
+            $get = $this->getCurrentDisk()->readAndDelete($file);
 
             if ($get) {
 
@@ -735,7 +705,7 @@ class Filesystem
 
         try {
 
-            $delete = $this->_getDisk()->delete($file);
+            $delete = $this->getCurrentDisk()->delete($file);
 
             if (!$delete) {
 
@@ -768,7 +738,7 @@ class Filesystem
 
         try {
 
-            $dir = $this->_getDisk()->createDir($path, ['visibility' => $this->_boolToVisibility($public)]);
+            $dir = $this->getCurrentDisk()->createDir($path, ['visibility' => $this->_boolToVisibility($public)]);
 
             if ($dir) {
 
@@ -802,7 +772,7 @@ class Filesystem
 
         try {
 
-            $dir = $this->_getDisk()->deleteDir($path);
+            $dir = $this->getCurrentDisk()->deleteDir($path);
 
             if ($dir) {
 
@@ -833,7 +803,7 @@ class Filesystem
 
     public function listContents(string $path, bool $recursive = false): array
     {
-        return $this->_getDisk()->listContents($path, $recursive);
+        return $this->getCurrentDisk()->listContents($path, $recursive);
     }
 
     /**
@@ -955,7 +925,7 @@ class Filesystem
 
         try {
 
-            return $this->_getDisk()->getVisibility($path);
+            return $this->getCurrentDisk()->getVisibility($path);
 
         } catch (Exception $e) {
 
@@ -981,7 +951,7 @@ class Filesystem
 
         try {
 
-            return $this->_getDisk()->getVisibility($path) == 'public';
+            return $this->getCurrentDisk()->getVisibility($path) == 'public';
 
         } catch (Exception $e) {
 
@@ -1007,7 +977,7 @@ class Filesystem
 
         try {
 
-            return $this->_getDisk()->getVisibility($path) == 'private';
+            return $this->getCurrentDisk()->getVisibility($path) == 'private';
 
         } catch (Exception $e) {
 
@@ -1033,7 +1003,7 @@ class Filesystem
 
         try {
 
-            $visibility = $this->_getDisk()->setVisibility($path, 'public');
+            $visibility = $this->getCurrentDisk()->setVisibility($path, 'public');
 
             if (!$visibility) {
 
@@ -1065,7 +1035,7 @@ class Filesystem
 
         try {
 
-            $visibility = $this->_getDisk()->setVisibility($path, 'private');
+            $visibility = $this->getCurrentDisk()->setVisibility($path, 'private');
 
             if (!$visibility) {
 
@@ -1102,7 +1072,7 @@ class Filesystem
 
         try {
 
-            $visibility = $this->_getDisk()->setVisibility($path, $visibility);
+            $visibility = $this->getCurrentDisk()->setVisibility($path, $visibility);
 
             if (!$visibility) {
 
@@ -1136,7 +1106,7 @@ class Filesystem
 
         try {
 
-            $meta = $this->_getDisk()->getMetadata($path);
+            $meta = $this->getCurrentDisk()->getMetadata($path);
 
             if ($meta) {
 
@@ -1170,7 +1140,7 @@ class Filesystem
 
         try {
 
-            $mime = $this->_getDisk()->getMimetype($path);
+            $mime = $this->getCurrentDisk()->getMimetype($path);
 
             if ($mime) {
 
@@ -1204,7 +1174,7 @@ class Filesystem
 
         try {
 
-            $size = $this->_getDisk()->getSize($file);
+            $size = $this->getCurrentDisk()->getSize($file);
 
             if ($size) {
 
@@ -1238,7 +1208,7 @@ class Filesystem
 
         try {
 
-            $time = $this->_getDisk()->getTimestamp($path);
+            $time = $this->getCurrentDisk()->getTimestamp($path);
 
             if ($time) {
 
@@ -1276,7 +1246,7 @@ class Filesystem
 
         try {
 
-            $disk = $this->_getDisk();
+            $disk = $this->getCurrentDisk();
 
             if ($disk->copy($file, $file . '.tmp')) {
 
@@ -1318,9 +1288,9 @@ class Filesystem
 
         try {
 
-            $config = $this->config[$this->current_disk];
+            $config = $this->config[$this->current_disk_name];
 
-            $disk = $this->_getDisk();
+            $disk = $this->getCurrentDisk();
 
             if (isset($config['url']) && $disk->has($path) && $disk->getVisibility($path) == 'public') {
 
