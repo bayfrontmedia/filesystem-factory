@@ -12,11 +12,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities
 
-## Upcoming
+## [1.2.0] - 2020.09.09
 
 ### Added
 
 - Added `hasDisk` method
+
+### Changed
+
+- Changed limitation for one disk to be required to be named `default`.
+Now, the default disk is defined in the configuration array.
+
+- All disks in the configuration array will now connect automatically when Filesystem Factory is instantiated.
 
 ## [1.1.0] - 2020.09.09
 

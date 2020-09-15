@@ -194,6 +194,7 @@ Installation: `league/flysystem-cached-adapter`
 - [getDiskNames](#getdisknames)
 - [getDefaultDiskName](#getdefaultdiskname)
 - [getCurrentDiskName](#getcurrentdiskname)
+- [hasDisk](#hasdisk)
 - [disk](#disk)
 
 **Files and directories**
@@ -399,7 +400,9 @@ if ($filesystem->hasDisk('cdn')) {
 
 **Description:**
 
-Sets the current disk, creating a new filesystem instance if not already existing. After the disk is accessed, the current disk will automatically revert to the default disk.
+Sets the current disk. 
+
+After the disk is accessed, the current disk will automatically revert to the default disk.
 
 **Parameters:**
 
@@ -412,7 +415,6 @@ Sets the current disk, creating a new filesystem instance if not already existin
 
 **Throws:**
 
-- `Bayfront\Filesystem\Exceptions\ConfigurationException`
 - `Bayfront\Filesystem\Exceptions\DiskException`
 
 **Example:**

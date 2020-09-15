@@ -36,6 +36,8 @@ class Filesystem
 
     private $current_disk_name;
 
+    private $filesystems = []; // Active filesystem instances (disks)
+
     /**
      * Constructor.
      *
@@ -53,11 +55,7 @@ class Filesystem
 
         $this->_connectToDisks();
 
-        //$this->current_disk = $this->default_disk_name;
-
     }
-
-    private $filesystems = []; // Active filesystem instances
 
     /**
      * Connect to all disks in the configuration array.
@@ -248,6 +246,8 @@ class Filesystem
 
     /**
      * Sets the current disk.
+     *
+     * After the disk is accessed, the current disk will automatically revert to the default disk.
      *
      * @param string $name
      * @param bool $make_default

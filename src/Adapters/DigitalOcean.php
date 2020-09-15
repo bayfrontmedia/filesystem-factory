@@ -52,10 +52,7 @@ class DigitalOcean implements AdapterInterface
             throw new ConfigurationException('Invalid storage adapter configuration');
         }
 
-        $client = new Client(Arr::except($config, [
-            'bucket',
-            'driver'
-        ]));
+        $client = new Client($config);
 
         return new Adapter($client, $config['bucket']);
 

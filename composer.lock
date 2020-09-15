@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3f2e78a3e776743a6d89c3f5d5ac5420",
+    "content-hash": "dd3ec61902af13267fdfcdb8937f2699",
     "packages": [
         {
             "name": "bayfrontmedia/php-array-helpers",
@@ -140,16 +140,16 @@
     "packages-dev": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.153.0",
+            "version": "3.154.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "3045bc6c8f7d2521b3e0d4a7b407194af8725c8f"
+                "reference": "0001c05c03f2bd354f6b38f6b81b60f45c2514f8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/3045bc6c8f7d2521b3e0d4a7b407194af8725c8f",
-                "reference": "3045bc6c8f7d2521b3e0d4a7b407194af8725c8f",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/0001c05c03f2bd354f6b38f6b81b60f45c2514f8",
+                "reference": "0001c05c03f2bd354f6b38f6b81b60f45c2514f8",
                 "shasum": ""
             },
             "require": {
@@ -221,7 +221,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2020-09-09T18:12:35+00:00"
+            "time": "2020-09-15T18:15:35+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
