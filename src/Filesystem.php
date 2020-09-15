@@ -201,6 +201,19 @@ class Filesystem
     }
 
     /**
+     * Checks if a given disk name exists.
+     *
+     * @param string $name
+     *
+     * @return bool
+     */
+
+    public function hasDisk(string $name): bool
+    {
+        return isset($this->filesystems[$name]);
+    }
+
+    /**
      * Sets the current disk, creating a new filesystem instance if not already existing.
      *
      * @param string $name

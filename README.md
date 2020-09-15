@@ -363,6 +363,30 @@ echo $filesystem->getCurrentDiskName();
 
 <hr />
 
+### hasDisk
+
+**Description:**
+
+Checks if a given disk name exists.
+
+**Parameters:**
+
+- `$name` (string)
+
+**Returns:**
+
+- (bool)
+
+**Example:**
+
+```
+if ($filesystem->hasDisk('cdn')) {
+    // Do something
+}
+```
+
+<hr />
+
 ### disk
 
 **Description:**
