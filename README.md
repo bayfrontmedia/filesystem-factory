@@ -301,7 +301,7 @@ $flysystem = $filesystem->getCurrentDisk();
 
 **Description:**
 
-Returns array of disk names which have been created.
+Returns array of all disk names.
 
 **Parameters:**
 

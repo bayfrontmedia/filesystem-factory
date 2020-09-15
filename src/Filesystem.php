@@ -53,6 +53,7 @@ class Filesystem
      * @return void
      *
      * @throws ConfigurationException
+     * @throws DiskException
      *
      */
 
@@ -67,31 +68,97 @@ class Filesystem
 
         $this->config = $config;
 
-        $this->current_disk = $this->default_disk_name;
+        $this->_connectToDisks();
 
-        $this->disk($this->default_disk_name); // Create instance
+        $this->current_disk = $this->default_disk_name;
 
     }
 
     private $filesystems = []; // Active filesystem instances
 
     /**
+     * Connect to all disks in the configuration array.
+     *
+     * This should only be called in the constructor.
+     *
+     * @return void
+     *
+     * @throws ConfigurationException
+     * @throws DiskException
+     */
+
+    private function _connectToDisks(): void
+    {
+
+        foreach ($this->config as $disk_name => $disk_config) {
+
+            // Create new filesystem object
+
+            // Check validity
+
+            if (Arr::isMissing($disk_config, [
+                    'adapter'
+                ])) {
+
+                throw new ConfigurationException('Invalid disk configuration');
+
+            }
+
+            if (!class_exists($this->adapters_namespace . $disk_config['adapter'])) {
+
+                throw new DiskException('Disk adapter does not exist (' . $disk_config['adapter'] . ')');
+
+            }
+
+            // Create object
+
+            /** @var $adapter_class AdapterInterface */
+
+            $adapter_class = $this->adapters_namespace . $disk_config['adapter'];
+
+            try {
+
+                $adapter = $adapter_class::create($disk_config);
+
+                // Check for cache
+
+                if (isset($disk_config['cache']['location'])
+                    && class_exists($this->cache_namespace . $disk_config['cache']['location'])) {
+
+                    /** @var $cache_class CacheInterface */
+
+                    $cache_class = $this->cache_namespace . $disk_config['cache']['location'];
+
+                    $adapter = $cache_class::create($disk_config['cache'], $adapter);
+
+                }
+
+                $this->filesystems[$disk_name] = new Flysystem($adapter); // Create new filesystem instance
+
+            } catch (Exception $e) {
+
+                throw new DiskException($e->getMessage(), 0, $e);
+
+            }
+
+        }
+
+    }
+
+    /**
      * Returns current disk's filesystem object, then resets current disk to default.
+     *
+     * Because the current disk name will always exist as a disk,
+     * the DiskException can be suppressed.
      *
      * @return Flysystem
      *
+     * @noinspection PhpUnhandledExceptionInspection
+     * @noinspection PhpDocMissingThrowsInspection
      */
 
     private function _getDisk(): Flysystem
     {
-
-        $disk = $this->current_disk;
-
-        if (!isset($this->filesystems[$disk])) { // This can happen when disk() has never been explicitly used
-
-            $this->disk($disk); // Create filesystem object
-
-        }
 
         if (true === $this->revert_disk_after_use) {
 
@@ -99,7 +166,7 @@ class Filesystem
 
         }
 
-        return $this->filesystems[$disk];
+        return $this->getDisk($this->current_disk);
 
     }
 
@@ -129,15 +196,7 @@ class Filesystem
     public function getDisk(string $name): Flysystem
     {
 
-        $current = $this->current_disk;
-
-        /*
-         * Force the creation of this disk if it does not already exist
-         */
-
-        $this->disk($name)->disk($current);
-
-        if (!isset($this->filesystems[$name])) {
+        if (!$this->hasDisk($name)) {
             throw new DiskException('Disk does not exist (' . $name . ')');
         }
 
@@ -149,6 +208,8 @@ class Filesystem
      * Returns the Flysystem instance for the default disk.
      *
      * @return Flysystem
+     *
+     * @throws DiskException
      */
 
     public function getDefaultDisk(): Flysystem
@@ -160,6 +221,8 @@ class Filesystem
      * Returns the Flysystem instance for the current disk.
      *
      * @return Flysystem
+     *
+     * @throws DiskException
      */
 
     public function getCurrentDisk(): Flysystem
@@ -168,7 +231,7 @@ class Filesystem
     }
 
     /**
-     * Returns array of disk names which have been created.
+     * Returns array of all disk names.
      *
      * @return array
      */
@@ -214,21 +277,20 @@ class Filesystem
     }
 
     /**
-     * Sets the current disk, creating a new filesystem instance if not already existing.
+     * Sets the current disk.
      *
      * @param string $name
      * @param bool $make_default
      *
      * @return self
-     *
-     * @throws ConfigurationException
+
      * @throws DiskException
      */
 
     public function disk(string $name, bool $make_default = false): self
     {
 
-        if (isset($this->filesystems[$name])) { // If filesystem is already created
+        if ($this->hasDisk($name)) {
 
             $this->current_disk = $name; // Update current disk name
 
@@ -242,65 +304,7 @@ class Filesystem
 
         }
 
-        // Create new filesystem object
-
-        // Check validity
-
-        if (!isset($this->config[$name])
-            || Arr::isMissing($this->config[$name], [
-                'adapter'
-            ])) {
-
-            throw new ConfigurationException('Invalid disk configuration');
-
-        }
-
-        if (!class_exists($this->adapters_namespace . $this->config[$name]['adapter'])) {
-
-            throw new DiskException('Disk adapter does not exist (' . $this->config[$name]['adapter'] . ')');
-
-        }
-
-        // Create object
-
-        /** @var $adapter_class AdapterInterface */
-
-        $adapter_class = $this->adapters_namespace . $this->config[$name]['adapter'];
-
-        try {
-
-            $adapter = $adapter_class::create($this->config[$name]);
-
-            // Check for cache
-
-            if (isset($this->config[$name]['cache']['location'])
-                && class_exists($this->cache_namespace . $this->config[$name]['cache']['location'])) {
-
-                /** @var $cache_class CacheInterface */
-
-                $cache_class = $this->cache_namespace . $this->config[$name]['cache']['location'];
-
-                $adapter = $cache_class::create($this->config[$name]['cache'], $adapter);
-
-            }
-
-            $this->filesystems[$name] = new Flysystem($adapter); // Create new filesystem instance
-
-            $this->current_disk = $name; // Update current disk name
-
-            if (true === $make_default) {
-
-                $this->revert_disk_after_use = false;
-
-            }
-
-            return $this;
-
-        } catch (Exception $e) {
-
-            throw new DiskException($e->getMessage(), 0, $e);
-
-        }
+        throw new DiskException('Unable to use disk (' . $name . '): disk does not exist');
 
     }
 
