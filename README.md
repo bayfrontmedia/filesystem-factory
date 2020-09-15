@@ -34,7 +34,7 @@ composer require bayfrontmedia/filesystem-factory
 
 The configuration array allows you to set up all of your "disks". You can have as many disks as you like, and each disk uses its own adapter and has its own settings.
 
-Each disk must have a unique name. The `default` disk is required, and will always be used unless another disk is specified using `disk()`.
+Each disk must have a unique name. One disk must be marked as `default`, and will always be used unless another disk is specified using `disk()`.
 
 To utilize the `url()` method (optional), add a `url` key which points to the root path of the disk.
 
@@ -47,7 +47,8 @@ use Bayfront\Filesystem\Exceptions\ConfigurationException;
 use Bayfront\Filesystem\Filesystem;
 
 $config = [
-    'default' => [ // Name of disk ("default" required)
+    'local' => [ // Name of disk
+        'default' => true, // One disk must be marked as default
         'adapter' => 'Local', // Class name in Bayfront\Filesystem\Adapters namespace
         'root' => 'path/to/root',
         'permissions' => [
